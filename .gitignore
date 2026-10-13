@@ -41,11 +41,12 @@ build/
 CLAUDE.md
 
 ### 历史备份与本地教学/笔记文件（禁止入库）###
-.git-origin-backup/
-MISSION.md
-RESOURCES.md
-NOTES.md
-assets/
-lessons/
-reference/
-learning-records/
+### 注意：以下规则一律锚定到仓库根目录，避免误伤子目录中的同名目录（如前端 src/assets）
+/.git-origin-backup/
+/MISSION.md
+/RESOURCES.md
+/NOTES.md
+/assets/
+/lessons/
+/reference/
+/learning-records/

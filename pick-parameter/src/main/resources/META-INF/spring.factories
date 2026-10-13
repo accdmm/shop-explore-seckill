@@ -1,0 +1,4 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  com.li.seckill.environment.SpringEnvironment
+org.springframework.context.ApplicationContextInitializer=\
+  com.li.seckill.core.SpringUtil

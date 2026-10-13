@@ -19,25 +19,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.javaup</groupId>
-    <artifactId>hmdp-plus</artifactId>
+    <groupId>com.li.seckill</groupId>
+    <artifactId>shop-pick</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
     <description>
-        🔥 🔥 热门推荐 🔥 🔥将黑马点评进行完全地重构升级，围绕优惠券秒杀与热点查询，补齐高并发稳定性、动态令牌、限流、消息可靠性与数据一致性闭环，并添加订阅通知、候补排队等新亮点功能，解决烂大街和亮点不足问题！并打造成真正企业级别实战项目，全面工程化落地。
+        shop-pick — 探店场景的高并发优惠券秒杀平台。围绕秒杀链路一致性、多层缓存、消息可靠性与全链路流控做工程化落地，并实现订阅通知、库存回流补发等能力。
     </description>
 
     <modules>
-        <module>hmdp-common</module>
-        <module>hmdp-sharding</module>
-        <module>hmdp-core-service</module>
-        <module>hmdp-redisson-framework</module>
-        <module>hmdp-redis-tool-framework</module>
-        <module>hmdp-id-generator-framework</module>
-        <module>hmdp-mq-framework</module>
-        <module>hmdp-parameter</module>
+        <module>pick-common</module>
+        <module>pick-sharding</module>
+        <module>pick-core-service</module>
+        <module>pick-redisson-framework</module>
+        <module>pick-redis-tool-framework</module>
+        <module>pick-id-generator-framework</module>
+        <module>pick-mq-framework</module>
+        <module>pick-parameter</module>
     </modules>
 
     <properties>

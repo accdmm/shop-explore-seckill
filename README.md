@@ -1,6 +1,6 @@
-# shop-explore-seckill
+# shop-pick
 
-> 探店场景的优惠券秒杀平台。围绕「高并发抢购」这一核心场景，重点解决**库存超卖、缓存穿透/击穿、消息可靠性与 Redis 与数据库的一致性**问题，并补充订阅提醒、库存回流等原因项目缺失的能力。
+> 探店场景的优惠券秒杀平台。围绕「高并发抢购」这一核心场景，重点解决**库存超卖、缓存穿透/击穿、消息可靠性与 Redis 与数据库的一致性**问题，并实现订阅提醒、库存回流补发等能力。
 
 技术栈：`Spring Boot 3` · `Redis + Lua` · `Redisson` · `Kafka` · `ShardingSphere` · `MyBatis-Plus` · `Caffeine` · `MySQL` · `Vue 3`
 
@@ -74,15 +74,15 @@
 
 | 模块 | 职责 |
 |---|---|
-| `hmdp-common` | 常量、枚举、异常、ThreadLocal 工具 |
-| `hmdp-sharding` | 分库分表依赖封装 |
-| `hmdp-core-service` | 核心业务：Controller / Service / Lua / Kafka / 初始化 |
-| `hmdp-redisson-framework` | 分布式锁（注解式、四种锁类型）、布隆过滤器、防重执行 |
-| `hmdp-redis-tool-framework` | Redis 客户端封装、限流（滑动窗口 / 令牌桶）、前置令牌 |
-| `hmdp-id-generator-framework` | 雪花算法 + Redis 分配 workerId |
-| `hmdp-mq-framework` | Kafka 生产 / 消费抽象基类、消息封装、延迟队列 |
-| `hmdp-parameter` | DTO / VO 契约层 |
-| `hmdp-vue3` | 前端（Vue 3 + Vite + Element Plus + Pinia） |
+| `pick-common` | 常量、枚举、异常、ThreadLocal 工具 |
+| `pick-sharding` | 分库分表依赖封装 |
+| `pick-core-service` | 核心业务：Controller / Service / Lua / Kafka / 初始化 |
+| `pick-redisson-framework` | 分布式锁（注解式、四种锁类型）、布隆过滤器、防重执行 |
+| `pick-redis-tool-framework` | Redis 客户端封装、限流（滑动窗口 / 令牌桶）、前置令牌 |
+| `pick-id-generator-framework` | 雪花算法 + Redis 分配 workerId |
+| `pick-mq-framework` | Kafka 生产 / 消费抽象基类、消息封装、延迟队列 |
+| `pick-parameter` | DTO / VO 契约层 |
+| `pick-vue3` | 前端（Vue 3 + Vite + Element Plus + Pinia） |
 
 各框架模块通过 Spring Boot 自动装配（`META-INF/spring/...AutoConfiguration.imports`）接入，业务服务按需依赖。
 
@@ -95,7 +95,7 @@
 | 组件 | 版本 / 地址 |
 |---|---|
 | JDK | 17 |
-| MySQL | 8.x，需建两个库：`hmdp_0`、`hmdp_1` |
+| MySQL | 8.x，需建两个库：`pick_0`、`pick_1` |
 | Redis | `127.0.0.1:6379`（database 0） |
 | Kafka | `localhost:9092` |
 | Node.js | 前端构建需要 |
@@ -106,27 +106,27 @@
 
 ```bash
 sql/1_create_database.sql   # 建库
-sql/hmdp_0.sql              # 分片库 0
-sql/hmdp_1.sql              # 分片库 1
+sql/pick_0.sql              # 分片库 0
+sql/pick_1.sql              # 分片库 1
 ```
 
-数据库连接信息见 `hmdp-core-service/src/main/resources/shardingsphere.yaml`。
+数据库连接信息见 `pick-core-service/src/main/resources/shardingsphere.yaml`。
 
 ### 3. 启动后端
 
 ```bash
 mvn clean install
-# 运行 hmdp-core-service 模块的启动类 HmDianPingApplication
+# 运行 pick-core-service 模块的启动类 ShopPickApplication
 ```
 
-服务端口 `8085`。Redis、Kafka 连接信息见 `hmdp-core-service/src/main/resources/application.yml`。
+服务端口 `8085`。Redis、Kafka 连接信息见 `pick-core-service/src/main/resources/application.yml`。
 
 > 首次启动会自动执行：布隆过滤器初始化 → 活动时间维护 → 缓存清理（见 `init/` 目录下的初始化器）。
 
 ### 4. 启动前端
 
 ```bash
-cd hmdp-vue3
+cd pick-vue3
 npm install
 npm run dev
 ```
@@ -139,18 +139,18 @@ npm run dev
 
 | 主题 | 代码位置 |
 |---|---|
-| 秒杀资格判定与原子扣减 | `hmdp-core-service/src/main/resources/lua/seckillVoucher.lua` |
-| 回滚脚本 | `hmdp-core-service/src/main/resources/lua/seckillVoucherRollBack.lua` |
+| 秒杀资格判定与原子扣减 | `pick-core-service/src/main/resources/lua/seckillVoucher.lua` |
+| 回滚脚本 | `pick-core-service/src/main/resources/lua/seckillVoucherRollBack.lua` |
 | 秒杀主流程 / 取消 / 补发 | `.../service/impl/VoucherOrderServiceImpl.java` |
 | 多级缓存与单飞回源 | `.../service/impl/SeckillVoucherServiceImpl.java` |
 | 本地缓存（Caffeine） | `.../cache/SeckillVoucherLocalCache.java` |
 | 回滚重试与告警 | `.../kafka/redis/RedisVoucherData.java` |
 | 消息消费（超时丢弃 / 回滚 / 旁路） | `.../kafka/consumer/SeckillVoucherConsumer.java` |
 | 定时对账任务 | `.../service/impl/ReconciliationTaskServiceImpl.java` |
-| 限流算法（滑动窗口 / 令牌桶） | `hmdp-redis-rate-limit-framework/src/main/resources/lua/*.lua` |
-| 防重执行切面 | `hmdp-repeat-execute-limit-framework/.../RepeatExecuteLimitAspect.java` |
-| 分库分表配置 | `hmdp-core-service/src/main/resources/shardingsphere.yaml` |
-| 消费基类（ack 与重投） | `hmdp-mq-consumer-framework/.../AbstractConsumerHandler.java` |
+| 限流算法（滑动窗口 / 令牌桶） | `pick-redis-rate-limit-framework/src/main/resources/lua/*.lua` |
+| 防重执行切面 | `pick-repeat-execute-limit-framework/.../RepeatExecuteLimitAspect.java` |
+| 分库分表配置 | `pick-core-service/src/main/resources/shardingsphere.yaml` |
+| 消费基类（ack 与重投） | `pick-mq-consumer-framework/.../AbstractConsumerHandler.java` |
 
 ---
 
